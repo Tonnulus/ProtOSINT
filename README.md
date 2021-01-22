@@ -17,7 +17,7 @@ ProtOSINT is separated in 3 sub-modules:
 ## Usage
 
 ```bash
-python3 protosint.py
+python3 protosint.py --help
 ```
 
 ## Protonmail 
