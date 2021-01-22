@@ -5,6 +5,7 @@ import requests
 from datetime import datetime
 import re
 import ipaddress
+import argparse
 
 #Color setup
 class bcolors:
@@ -57,7 +58,7 @@ Let's take a look at your target:
 	print(welcome)
 
 
-def checkValidityOneAccount():
+def checkValidityOneAccount(mail=False):
 	"""
 	PROGRAM 1 : Test the validity of one protonmail account
 	
@@ -65,7 +66,10 @@ def checkValidityOneAccount():
 	invalidEmail = True
 	regexEmail = "([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
 	
-	print("You want to know if a protonmail email is real ?")
+	if(re.search(regexEmail,mail)):
+			invalidEmail = False
+	else :
+		print("You want to know if a protonmail email is real ?")
 	while invalidEmail:
 		#Input
 		mail = input("Give me your email: ")
@@ -127,78 +131,76 @@ def checkValidityOneAccount():
 				print("Invalid Input")
 				invalidResponse = True
 
-def checkGeneratedProtonAccounts():
+def checkGeneratedProtonAccounts(firstName=False, lastName=False, yearOfBirth=False, pseudos=False, zipCode=False ):
 	"""
 	PROGRAM 2 : Try to find if your target have a protonmail account by generating multiple adresses by combining information fields inputted
 	
 	"""
-
-	#Input
-	print("Let's go, try to find your protonmail target:")
-	firstName = input("First name: ").lower()
-	lastName = input("Last name: ").lower()
-	yearOfBirth = input("Year of birth: ")
-	pseudo1 = input("Pseudo 1: ").lower()
-	pseudo2 = input("Pseudo 2: ").lower()
-	zipCode = input("zipCode: ")
+	if not firstName: 
+		print("Let's go, try to find your protonmail target:")
+		firstName = input("First name: ").lower()
+	if not lastName :
+		lastName = input("Last name: ").lower()
+	if not yearOfBirth :
+		yearOfBirth = input("Year of birth: ")
+	if not pseudos :
+		pseudos = input("List Pseudos : ").lower()
+	if not zipCode :
+		zipCode = input("zipCode: ")
 
 	#Protonmail domain
 	domainList = ["@protonmail.com","@protonmail.ch","@pm.me"]
 
 	#List of combinaison
-	pseudoList=[]
+	emailLocalPartList=[]
 	
 	for domain in domainList:
 		#For domain
-		pseudoList.append(firstName+lastName+domain)
-		pseudoList.append(lastName+firstName+domain)
-		pseudoList.append(firstName[0]+lastName+domain)
-		pseudoList.append(pseudo1+domain)
-		pseudoList.append(pseudo2+domain)
-		pseudoList.append(lastName+domain)
-		pseudoList.append(firstName+lastName+yearOfBirth+domain)
-		pseudoList.append(firstName[0]+lastName+yearOfBirth+domain)
-		pseudoList.append(lastName+firstName+yearOfBirth+domain)
-		pseudoList.append(pseudo1+yearOfBirth+domain)
-		pseudoList.append(pseudo2+yearOfBirth+domain)
-		pseudoList.append(firstName+lastName+yearOfBirth[-2:]+domain)
-		pseudoList.append(firstName+lastName+yearOfBirth[-2:]+domain)
-		pseudoList.append(firstName[0]+lastName+yearOfBirth[-2:]+domain)
-		pseudoList.append(lastName+firstName+yearOfBirth[-2:]+domain)
-		pseudoList.append(pseudo1+yearOfBirth[-2:]+domain)
-		pseudoList.append(pseudo2+yearOfBirth[-2:]+domain)
-		pseudoList.append(firstName+lastName+zipCode+domain)
-		pseudoList.append(firstName[0]+lastName+zipCode+domain)
-		pseudoList.append(lastName+firstName+zipCode+domain)
-		pseudoList.append(pseudo1+zipCode+domain)
-		pseudoList.append(pseudo2+zipCode+domain)
-		pseudoList.append(firstName+lastName+zipCode[:2]+domain)
-		pseudoList.append(firstName[0]+lastName+zipCode[:2]+domain)
-		pseudoList.append(lastName+firstName+zipCode[:2]+domain)
-		pseudoList.append(pseudo1+zipCode[:2]+domain)
-		pseudoList.append(pseudo2+zipCode[:2]+domain)
+		emailLocalPartList.append(firstName+lastName+domain)
+		emailLocalPartList.append(lastName+firstName+domain)
+		emailLocalPartList.append(firstName[0]+lastName+domain)
+		emailLocalPartList.append(lastName+domain)
+		emailLocalPartList.append(firstName+lastName+yearOfBirth+domain)
+		emailLocalPartList.append(firstName[0]+lastName+yearOfBirth+domain)
+		emailLocalPartList.append(lastName+firstName+yearOfBirth+domain)
+		emailLocalPartList.append(firstName+lastName+yearOfBirth[-2:]+domain)
+		emailLocalPartList.append(firstName+lastName+yearOfBirth[-2:]+domain)
+		emailLocalPartList.append(firstName[0]+lastName+yearOfBirth[-2:]+domain)
+		emailLocalPartList.append(lastName+firstName+yearOfBirth[-2:]+domain)
+		emailLocalPartList.append(firstName+lastName+zipCode+domain)
+		emailLocalPartList.append(firstName[0]+lastName+zipCode+domain)
+		emailLocalPartList.append(lastName+firstName+zipCode+domain)
+		emailLocalPartList.append(firstName+lastName+zipCode[:2]+domain)
+		emailLocalPartList.append(firstName[0]+lastName+zipCode[:2]+domain)
+		emailLocalPartList.append(lastName+firstName+zipCode[:2]+domain)
+		for pseudo in pseudos:
+			emailLocalPartList.append(pseudo+zipCode[:2]+domain)
+			emailLocalPartList.append(pseudo+zipCode+domain)
+			emailLocalPartList.append(pseudo+yearOfBirth[-2:]+domain)
+			emailLocalPartList.append(pseudo+yearOfBirth+domain)
+			emailLocalPartList.append(pseudo+domain)
 
 
 	#Remove duplicates from list
-	pseudoListUniq = [] 
-	for i in pseudoList: 
-	    if i not in pseudoListUniq: 
-	        pseudoListUniq.append(i) 
+	emailLocalPartListUniq = [] 
+	for i in emailLocalPartList: 
+	    if i not in emailLocalPartListUniq: 
+	        emailLocalPartListUniq.append(i) 
 
 	#Remove all irrelevant combinations
 	for domain in domainList:
-		if domain in pseudoListUniq: pseudoListUniq.remove(domain)
-		if zipCode+domain in pseudoListUniq: pseudoListUniq.remove(zipCode+domain)
-		if zipCode[:2]+domain in pseudoListUniq: pseudoListUniq.remove(zipCode[:2]+domain)
-		if yearOfBirth+domain in pseudoListUniq: pseudoListUniq.remove(yearOfBirth+domain)
-		if yearOfBirth[-2:]+domain in pseudoListUniq: pseudoListUniq.remove(yearOfBirth[-2:]+domain)
-		if firstName+domain in pseudoListUniq: pseudoListUniq.remove(firstName+domain)
+		if domain in emailLocalPartListUniq: emailLocalPartListUniq.remove(domain)
+		if zipCode+domain in emailLocalPartListUniq: emailLocalPartListUniq.remove(zipCode+domain)
+		if zipCode[:2]+domain in emailLocalPartListUniq: emailLocalPartListUniq.remove(zipCode[:2]+domain)
+		if yearOfBirth+domain in emailLocalPartListUniq: emailLocalPartListUniq.remove(yearOfBirth+domain)
+		if yearOfBirth[-2:]+domain in emailLocalPartListUniq: emailLocalPartListUniq.remove(yearOfBirth[-2:]+domain)
+		if firstName+domain in emailLocalPartListUniq: emailLocalPartListUniq.remove(firstName+domain)
 
 	print("===============================")
-	print("I'm trying some combinaison: " + str(len(pseudoListUniq)))
+	print("I'm trying some combinaison: " + str(len(emailLocalPartListUniq)))
 	print("===============================")
 
-	for pseudo in pseudoListUniq:
+	for pseudo in emailLocalPartListUniq:
 		requestProton = requests.get('https://api.protonmail.ch/pks/lookup?op=index&search='+str(pseudo))
 		bodyResponse = requestProton.text
 
@@ -226,17 +228,20 @@ def checkGeneratedProtonAccounts():
 					dtObject = datetime.fromtimestamp(timestamp)
 					print(pseudo + " is " + f"{bcolors.OKGREEN}valid{bcolors.ENDC}" + " - Creation date:", dtObject)
 
-def checkIPProtonVPN():
+def checkIPProtonVPN(ip="False"):
 	"""
 	PROGRAM 3 : Find if your IP is currently affiliate to ProtonVPN
 	
 	"""
-	while True:
-	    try:
-	        ip = ipaddress.ip_address(input('Enter IP address: '))
-	        break
-	    except ValueError:
-	        continue
+	try:
+		ip = ipaddress.ip_address(ip)
+	except ValueError:
+		while True:
+			try:
+				ip = ipaddress.ip_address(input('Enter IP address: '))
+				break
+			except ValueError:
+				continue
 
 	requestProton_vpn = requests.get('https://api.protonmail.ch/vpn/logicals')
 	bodyResponse = requestProton_vpn.text
@@ -249,16 +254,39 @@ def checkIPProtonVPN():
 
 # Entry point of the script
 def main():
-	printAscii()
-	checkProtonAPIStatut()
-	printWelcome()
-	choice = input("Choose a program: ")
-	if choice == "1":
-		checkValidityOneAccount() 
-	if choice == "2":
-		checkGeneratedProtonAccounts()
-	if choice == "3":
-		checkIPProtonVPN()
+	parser = argparse.ArgumentParser()
+	group = parser.add_mutually_exclusive_group()
+	group.add_argument("--mail","-m", action='store', type=str, help="Test the validity of one protonmail account")
+	group.add_argument("--search", action='store_true', help="Try to find if your target have a protonmail account")
+	group.add_argument("--ip", action='store', type=str, help="Find if your IP is currently affiliate to ProtonVPN")
+	group.add_argument("--status","-s", action='store_true', help="Check proton API statut")
+	# Arguements for search option
+	parser.add_argument("--firstName", type=str, help="Try to find if your target have a protonmail account. --search option needed")
+	parser.add_argument("--lastName", type=str, help="Try to find if your target have a protonmail account. --search option needed")
+	parser.add_argument("--yearOfBirth", type=str, help="Try to find if your target have a protonmail account. --search option needed")
+	parser.add_argument("--pseudo", type=str, nargs="+", help="Try to find if your target have a protonmail account. --search option needed")
+	parser.add_argument("--zipCode", type=str, help="Try to find if your target have a protonmail account. --search option needed")
+
+	args = parser.parse_args()
+	if args.mail :
+		checkValidityOneAccount(args.mail) 
+	elif args.search :
+		checkGeneratedProtonAccounts(args.firstName, args.lastName, args.yearOfBirth, args.pseudo, args.zipCode)
+	elif args.ip : 
+		checkIPProtonVPN(args.ip)
+	elif args.status :
+		checkProtonAPIStatut()
+	else :
+		printAscii()
+		checkProtonAPIStatut()
+		printWelcome()
+		choice = input("Choose a program: ")
+		if choice == "1":
+			checkValidityOneAccount() 
+		if choice == "2":
+			checkGeneratedProtonAccounts()
+		if choice == "3":
+			checkIPProtonVPN()
 
 if __name__ == '__main__':
 	main()
