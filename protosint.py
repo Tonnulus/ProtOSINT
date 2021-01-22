@@ -58,7 +58,7 @@ Let's take a look at your target:
 	print(welcome)
 
 
-def checkValidityOneAccount(mail=False):
+def checkValidityOneAccount(mail="False"):
 	"""
 	PROGRAM 1 : Test the validity of one protonmail account
 	
